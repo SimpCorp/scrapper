@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f5f7">
+<title>Listen — Music</title>
+
+<style>
+    :root {
+        --bg: #f5f5f7;
+        --card: rgba(255,255,255,.78);
+        --text: #1d1d1f;
+        --secondary: #6e6e73;
+        --border: rgba(0,0,0,.08);
+        --blue: #0071e3;
+        --danger: #ff3b30;
+        --shadow: 0 20px 60px rgba(0,0,0,.08);
+    }
+
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "SF Pro Display",
+            "SF Pro Text",
+            "Helvetica Neue",
+            Arial,
+            sans-serif;
+        color: var(--text);
+        background:
+            radial-gradient(circle at 20% 0%, #ffffff 0, transparent 35%),
+            radial-gradient(circle at 90% 20%, #e8e8ed 0, transparent 30%),
+            var(--bg);
+    }
+
+    button,
+    input {
+        font: inherit;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    /* ---------------- PASSWORD SCREEN ---------------- */
+
+    #lockScreen {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 24px;
+        background:
+            radial-gradient(circle at 50% 0%, #fff 0, transparent 50%),
+            var(--bg);
+    }
+
+    .lock-card {
+        width: min(420px, 100%);
+        padding: 42px 32px;
+        text-align: center;
+        background: rgba(255,255,255,.78);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255,255,255,.9);
+        border-radius: 30px;
+        box-shadow: var(--shadow);
+    }
+
+    .lock-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 22px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: #000;
+        color: #fff;
+        font-size: 28px;
+    }
+
+    .lock-card h1 {
+        margin: 0 0 8px;
+        font-size: 30px;
+        letter-spacing: -.7px;
+    }
+
+    .lock-card p {
+        margin: 0 0 26px;
+        color: var(--secondary);
+    }
+
+    .password-input {
+        width: 100%;
+        height: 52px;
+        padding: 0 16px;
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        outline: none;
+        background: rgba(245,245,247,.8);
+        text-align: center;
+        font-size: 20px;
+        letter-spacing: 5px;
+        transition: .2s;
+    }
+
+    .password-input:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px rgba(0,113,227,.12);
+    }
+
+    .unlock-button {
+        width: 100%;
+        height: 52px;
+        margin-top: 12px;
+        border: 0;
+        border-radius: 15px;
+        background: #0071e3;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform .15s, background .15s;
+    }
+
+    .unlock-button:hover {
+        background: #0077ed;
+    }
+
+    .unlock-button:active {
+        transform: scale(.98);
+    }
+
+    .lock-error {
+        height: 20px;
+        margin-top: 12px;
+        color: var(--danger);
+        font-size: 14px;
+    }
+
+    /* ---------------- APP ---------------- */
+
+    #app {
+        min-height: 100vh;
+        padding: 34px 20px 130px;
+    }
+
+    .container {
+        width: min(900px, 100%);
+        margin: auto;
+    }
+
+    header {
+        padding: 25px 4px 30px;
+    }
+
+    .eyebrow {
+        margin-bottom: 7px;
+        color: var(--secondary);
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: .3px;
+    }
+
+    header h1 {
+        margin: 0;
+        font-size: clamp(38px, 7vw, 64px);
+        line-height: .98;
+        letter-spacing: -3px;
+    }
+
+    header p {
+        margin: 18px 0 0;
+        color: var(--secondary);
+        font-size: 18px;
+    }
+
+    /* ---------------- SEARCH ---------------- */
+
+    .search-wrapper {
+        position: relative;
+        z-index: 20;
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 8px 8px 18px;
+        background: rgba(255,255,255,.82);
+        border: 1px solid rgba(0,0,0,.07);
+        border-radius: 20px;
+        box-shadow: 0 12px 40px rgba(0,0,0,.07);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+    }
+
+    .search-icon {
+        flex: 0 0 auto;
+        color: #777;
+        font-size: 19px;
+    }
+
+    #searchInput {
+        min-width: 0;
+        flex: 1;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        font-size: 17px;
+    }
+
+    #searchButton {
+        flex: 0 0 auto;
+        height: 42px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 13px;
+        background: #000;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* ---------------- SUGGESTIONS ---------------- */
+
+    .suggestions-section {
+        margin-top: 38px;
+    }
+
+    .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .section-title h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -.4px;
+    }
+
+    #resultStatus {
+        color: var(--secondary);
+        font-size: 14px;
+    }
+
+    #suggestions {
+        display: grid;
+        gap: 10px;
+    }
+
+    .song-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: rgba(255,255,255,.72);
+        cursor: pointer;
+        text-align: left;
+        transition: transform .18s, background .18s, box-shadow .18s;
+    }
+
+    .song-card:hover {
+        transform: translateY(-2px);
+        background: #fff;
+        box-shadow: 0 12px 30px rgba(0,0,0,.07);
+    }
+
+    .artwork {
+        width: 62px;
+        height: 62px;
+        flex: 0 0 62px;
+        border-radius: 14px;
+        object-fit: cover;
+        background:
+            linear-gradient(135deg,#ddd,#f8f8f8);
+    }
+
+    .song-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .song-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .song-artist {
+        margin-top: 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--secondary);
+        font-size: 14px;
+    }
+
+    .play-circle {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: #f0f0f2;
+        font-size: 17px;
+    }
+
+    .empty-state {
+        padding: 45px 20px;
+        text-align: center;
+        color: var(--secondary);
+    }
+
+    .spinner {
+        width: 22px;
+        height: 22px;
+        margin: auto;
+        border: 2px solid #ddd;
+        border-top-color: #111;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* ---------------- PLAYER ---------------- */
+
+    #player {
+        position: fixed;
+        z-index: 100;
+        left: 50%;
+        bottom: 18px;
+        width: min(850px, calc(100% - 24px));
+        transform: translateX(-50%);
+        padding: 13px;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        background: rgba(255,255,255,.88);
+        border: 1px solid rgba(255,255,255,.9);
+        border-radius: 22px;
+        box-shadow: 0 18px 60px rgba(0,0,0,.16);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+    }
+
+    #playerArtwork {
+        width: 54px;
+        height: 54px;
+        flex: 0 0 54px;
+        border-radius: 13px;
+        object-fit: cover;
+        background: #eee;
+    }
+
+    .player-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    #playerTitle {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    #playerArtist {
+        margin-top: 4px;
+        color: var(--secondary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    #audio {
+        width: 260px;
+        max-width: 30%;
+    }
+
+    .player-close {
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 50%;
+        background: #eeeef0;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    @media (max-width: 650px) {
+        #app {
+            padding-top: 15px;
+        }
+
+        header h1 {
+            letter-spacing: -2px;
+        }
+
+        #searchButton {
+            width: 44px;
+            padding: 0;
+            font-size: 0;
+        }
+
+        #searchButton::after {
+            content: "→";
+            font-size: 20px;
+        }
+
+        #player {
+            bottom: 10px;
+            border-radius: 20px;
+        }
+
+        #audio {
+            position: absolute;
+            left: 13px;
+            right: 13px;
+            bottom: -10px;
+            width: calc(100% - 26px);
+            max-width: none;
+            height: 24px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- PASSWORD -->
+
+<section id="lockScreen">
+    <div class="lock-card">
+        <div class="lock-icon">♪</div>
+
+        <h1>Welcome</h1>
+        <p>Enter the password to continue.</p>
+
+        <input
+            id="passwordInput"
+            class="password-input"
+            type="password"
+            autocomplete="off"
+            placeholder="Password"
+            aria-label="Password"
+        >
+
+        <button id="unlockButton" class="unlock-button">
+            Continue
+        </button>
+
+        <div id="lockError" class="lock-error"></div>
+    </div>
+</section>
+
+
+<!-- APPLICATION -->
+
+<main id="app" class="hidden">
+    <div class="container">
+
+        <header>
+            <div class="eyebrow">MUSIC</div>
+            <h1>Listen.</h1>
+            <p>Search for something you want to hear.</p>
+        </header>
+
+        <section class="search-wrapper">
+
+            <form id="searchForm" class="search-box">
+                <span class="search-icon">⌕</span>
+
+                <input
+                    id="searchInput"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="Artists, songs, albums…"
+                    aria-label="Search music"
+                >
+
+                <button id="searchButton" type="submit">
+                    Search
+                </button>
+            </form>
+
+        </section>
+
+
+        <section class="suggestions-section">
+
+            <div class="section-title">
+                <h2>Suggestions</h2>
+                <span id="resultStatus"></span>
+            </div>
+
+            <div id="suggestions">
+                <div class="empty-state">
+                    Search for a song to get started.
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</main>
+
+
+<!-- PLAYER -->
+
+<div id="player" class="hidden">
+
+    <img id="playerArtwork" alt="">
+
+    <div class="player-info">
+        <div id="playerTitle">Nothing playing</div>
+        <div id="playerArtist"></div>
+    </div>
+
+    <audio id="audio" controls preload="none"></audio>
+
+    <button
+        id="closePlayer"
+        class="player-close"
+        aria-label="Close player"
+    >
+        ×
+    </button>
+
+</div>
+
+
+<script>
+"use strict";
+
+/*
+    IMPORTANT SECURITY NOTE
+
+    This password is only a UI gate because this is client-side HTML.
+    Anyone who can inspect the page can discover it.
+
+    For real protection, validate the password on your server.
+*/
+
+const PASSWORD = "///";
+
+/*
+    Your backend should expose something like:
+
+        GET /api/search?q=believer
+
+    and return:
+
+    {
+        "results": [
+            {
+                "id": "...",
+                "title": "...",
+                "artist": "...",
+                "artwork": "...",
+                "playUrl": "..."
+            }
+        ]
+    }
+
+    Keep the backend responsible for provider/API credentials.
+
+    Do NOT use this endpoint to disguise or falsify the origin of media.
+*/
+
+const API_SEARCH_ENDPOINT = "/api/search";
+
+
+const lockScreen = document.getElementById("lockScreen");
+const app = document.getElementById("app");
+
+const passwordInput = document.getElementById("passwordInput");
+const unlockButton = document.getElementById("unlockButton");
+const lockError = document.getElementById("lockError");
+
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const suggestions = document.getElementById("suggestions");
+const resultStatus = document.getElementById("resultStatus");
+
+const player = document.getElementById("player");
+const playerArtwork = document.getElementById("playerArtwork");
+const playerTitle = document.getElementById("playerTitle");
+const playerArtist = document.getElementById("playerArtist");
+const audio = document.getElementById("audio");
+const closePlayer = document.getElementById("closePlayer");
+
+
+/* ---------------- PASSWORD ---------------- */
+
+function unlock() {
+    if (passwordInput.value === PASSWORD) {
+        lockScreen.classList.add("hidden");
+        app.classList.remove("hidden");
+
+        sessionStorage.setItem("unlocked", "true");
+
+        setTimeout(() => searchInput.focus(), 150);
+    } else {
+        lockError.textContent = "Incorrect password.";
+
+        passwordInput.value = "";
+        passwordInput.focus();
+
+        setTimeout(() => {
+            lockError.textContent = "";
+        }, 2500);
+    }
+}
+
+unlockButton.addEventListener("click", unlock);
+
+passwordInput.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+        unlock();
+    }
+});
+
+
+/* Optional session persistence */
+
+if (sessionStorage.getItem("unlocked") === "true") {
+    lockScreen.classList.add("hidden");
+    app.classList.remove("hidden");
+}
+
+
+/* ---------------- SEARCH ---------------- */
+
+searchForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const query = searchInput.value.trim();
+
+    if (!query) {
+        searchInput.focus();
+        return;
+    }
+
+    await search(query);
+});
+
+
+async function search(query) {
+
+    setLoading();
+
+    try {
+
+        const url =
+            `${API_SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}`;
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Search request failed (${response.status})`
+            );
+        }
+
+        const data = await response.json();
+
+        const results = Array.isArray(data.results)
+            ? data.results.slice(0, 3)
+            : [];
+
+        renderResults(results);
+
+    } catch (error) {
+
+        console.error(error);
+
+        resultStatus.textContent = "";
+
+        suggestions.innerHTML = `
+            <div class="empty-state">
+                <strong>Couldn't complete the search.</strong>
+                <br>
+                <span>
+                    Check that your search backend is running and try again.
+                </span>
+            </div>
+        `;
+    }
+}
+
+
+/* ---------------- RESULTS ---------------- */
+
+function setLoading() {
+
+    resultStatus.textContent = "Searching…";
+
+    suggestions.innerHTML = `
+        <div class="empty-state">
+            <div class="spinner"></div>
+        </div>
+    `;
+}
+
+
+function renderResults(results) {
+
+    resultStatus.textContent =
+        results.length
+            ? `${results.length} result${results.length === 1 ? "" : "s"}`
+            : "";
+
+    if (!results.length) {
+
+        suggestions.innerHTML = `
+            <div class="empty-state">
+                No results found.
+            </div>
+        `;
+
+        return;
+    }
+
+    suggestions.innerHTML = "";
+
+    results.forEach(song => {
+
+        const card = document.createElement("button");
+
+        card.type = "button";
+        card.className = "song-card";
+
+        const artwork = document.createElement("img");
+
+        artwork.className = "artwork";
+        artwork.alt = "";
+        artwork.loading = "lazy";
+
+        /*
+            Safe fallback instead of broken-image icons.
+        */
+        artwork.src =
+            song.artwork ||
+            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23eeeeef'/%3E%3Ctext x='50' y='55' text-anchor='middle' font-size='35' fill='%23999999'%3E♪%3C/text%3E%3C/svg%3E";
+
+        const info = document.createElement("div");
+        info.className = "song-info";
+
+        const title = document.createElement("div");
+        title.className = "song-title";
+        title.textContent = song.title || "Unknown title";
+
+        const artist = document.createElement("div");
+        artist.className = "song-artist";
+        artist.textContent = song.artist || "Unknown artist";
+
+        const play = document.createElement("div");
+        play.className = "play-circle";
+        play.textContent = "▶";
+
+        info.appendChild(title);
+        info.appendChild(artist);
+
+        card.appendChild(artwork);
+        card.appendChild(info);
+        card.appendChild(play);
+
+        card.addEventListener("click", () => {
+            playSong(song);
+        });
+
+        suggestions.appendChild(card);
+    });
+}
+
+
+/* ---------------- PLAYER ---------------- */
+
+function playSong(song) {
+
+    /*
+        playUrl should be a legitimate media URL or provider-approved
+        playback mechanism supplied by your backend/provider.
+    */
+
+    if (!song.playUrl) {
+
+        alert(
+            "This result does not have an available playback source."
+        );
+
+        return;
+    }
+
+    playerTitle.textContent =
+        song.title || "Unknown title";
+
+    playerArtist.textContent =
+        song.artist || "Unknown artist";
+
+    playerArtwork.src =
+        song.artwork || "";
+
+    player.classList.remove("hidden");
+
+    audio.pause();
+
+    audio.src = song.playUrl;
+
+    audio.load();
+
+    audio.play().catch(error => {
+
+        /*
+            Browsers can block autoplay. Since the user clicked the
+            result, most browsers permit playback, but this keeps the
+            application from crashing if they don't.
+        */
+
+        console.info(
+            "Playback requires user interaction:",
+            error
+        );
+    });
+}
+
+
+closePlayer.addEventListener("click", () => {
+
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
+
+    player.classList.add("hidden");
+});
+
+
+/* ---------------- AUDIO ERROR HANDLING ---------------- */
+
+audio.addEventListener("error", () => {
+
+    console.error(
+        "The selected media could not be played."
+    );
+
+    playerTitle.textContent =
+        "Playback unavailable";
+
+    playerArtist.textContent =
+        "The provider did not return playable media.";
+});
+
+
+/* ---------------- KEYBOARD UX ---------------- */
+
+document.addEventListener("keydown", event => {
+
+    if (
+        event.key === "/" &&
+        document.activeElement !== searchInput &&
+        document.activeElement !== passwordInput
+    ) {
+        event.preventDefault();
+        searchInput.focus();
+    }
+
+    if (
+        event.key === "Escape" &&
+        document.activeElement === searchInput
+    ) {
+        searchInput.value = "";
+        searchInput.blur();
+    }
+});
+</script>
+
+</body>
+</html>

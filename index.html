@@ -1,902 +1,639 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#f5f5f7">
-<title>Listen — Music</title>
-
-<style>
-    :root {
-        --bg: #f5f5f7;
-        --card: rgba(255,255,255,.78);
-        --text: #1d1d1f;
-        --secondary: #6e6e73;
-        --border: rgba(0,0,0,.08);
-        --blue: #0071e3;
-        --danger: #ff3b30;
-        --shadow: 0 20px 60px rgba(0,0,0,.08);
-    }
-
-    * {
-        box-sizing: border-box;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    body {
-        margin: 0;
-        min-height: 100vh;
-        font-family:
-            -apple-system,
-            BlinkMacSystemFont,
-            "SF Pro Display",
-            "SF Pro Text",
-            "Helvetica Neue",
-            Arial,
-            sans-serif;
-        color: var(--text);
-        background:
-            radial-gradient(circle at 20% 0%, #ffffff 0, transparent 35%),
-            radial-gradient(circle at 90% 20%, #e8e8ed 0, transparent 30%),
-            var(--bg);
-    }
-
-    button,
-    input {
-        font: inherit;
-    }
-
-    .hidden {
-        display: none !important;
-    }
-
-    /* ---------------- PASSWORD SCREEN ---------------- */
-
-    #lockScreen {
-        position: fixed;
-        inset: 0;
-        z-index: 1000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 24px;
-        background:
-            radial-gradient(circle at 50% 0%, #fff 0, transparent 50%),
-            var(--bg);
-    }
-
-    .lock-card {
-        width: min(420px, 100%);
-        padding: 42px 32px;
-        text-align: center;
-        background: rgba(255,255,255,.78);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid rgba(255,255,255,.9);
-        border-radius: 30px;
-        box-shadow: var(--shadow);
-    }
-
-    .lock-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 22px;
-        display: grid;
-        place-items: center;
-        border-radius: 18px;
-        background: #000;
-        color: #fff;
-        font-size: 28px;
-    }
-
-    .lock-card h1 {
-        margin: 0 0 8px;
-        font-size: 30px;
-        letter-spacing: -.7px;
-    }
-
-    .lock-card p {
-        margin: 0 0 26px;
-        color: var(--secondary);
-    }
-
-    .password-input {
-        width: 100%;
-        height: 52px;
-        padding: 0 16px;
-        border: 1px solid var(--border);
-        border-radius: 15px;
-        outline: none;
-        background: rgba(245,245,247,.8);
-        text-align: center;
-        font-size: 20px;
-        letter-spacing: 5px;
-        transition: .2s;
-    }
-
-    .password-input:focus {
-        border-color: var(--blue);
-        box-shadow: 0 0 0 4px rgba(0,113,227,.12);
-    }
-
-    .unlock-button {
-        width: 100%;
-        height: 52px;
-        margin-top: 12px;
-        border: 0;
-        border-radius: 15px;
-        background: #0071e3;
-        color: white;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform .15s, background .15s;
-    }
-
-    .unlock-button:hover {
-        background: #0077ed;
-    }
-
-    .unlock-button:active {
-        transform: scale(.98);
-    }
-
-    .lock-error {
-        height: 20px;
-        margin-top: 12px;
-        color: var(--danger);
-        font-size: 14px;
-    }
-
-    /* ---------------- APP ---------------- */
-
-    #app {
-        min-height: 100vh;
-        padding: 34px 20px 130px;
-    }
-
-    .container {
-        width: min(900px, 100%);
-        margin: auto;
-    }
-
-    header {
-        padding: 25px 4px 30px;
-    }
-
-    .eyebrow {
-        margin-bottom: 7px;
-        color: var(--secondary);
-        font-size: 14px;
-        font-weight: 600;
-        letter-spacing: .3px;
-    }
-
-    header h1 {
-        margin: 0;
-        font-size: clamp(38px, 7vw, 64px);
-        line-height: .98;
-        letter-spacing: -3px;
-    }
-
-    header p {
-        margin: 18px 0 0;
-        color: var(--secondary);
-        font-size: 18px;
-    }
-
-    /* ---------------- SEARCH ---------------- */
-
-    .search-wrapper {
-        position: relative;
-        z-index: 20;
-    }
-
-    .search-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 8px 8px 18px;
-        background: rgba(255,255,255,.82);
-        border: 1px solid rgba(0,0,0,.07);
-        border-radius: 20px;
-        box-shadow: 0 12px 40px rgba(0,0,0,.07);
-        backdrop-filter: blur(25px);
-        -webkit-backdrop-filter: blur(25px);
-    }
-
-    .search-icon {
-        flex: 0 0 auto;
-        color: #777;
-        font-size: 19px;
-    }
-
-    #searchInput {
-        min-width: 0;
-        flex: 1;
-        border: 0;
-        outline: 0;
-        background: transparent;
-        font-size: 17px;
-    }
-
-    #searchButton {
-        flex: 0 0 auto;
-        height: 42px;
-        padding: 0 18px;
-        border: 0;
-        border-radius: 13px;
-        background: #000;
-        color: #fff;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    /* ---------------- SUGGESTIONS ---------------- */
-
-    .suggestions-section {
-        margin-top: 38px;
-    }
-
-    .section-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-
-    .section-title h2 {
-        margin: 0;
-        font-size: 22px;
-        letter-spacing: -.4px;
-    }
-
-    #resultStatus {
-        color: var(--secondary);
-        font-size: 14px;
-    }
-
-    #suggestions {
-        display: grid;
-        gap: 10px;
-    }
-
-    .song-card {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        padding: 12px;
-        border: 1px solid var(--border);
-        border-radius: 20px;
-        background: rgba(255,255,255,.72);
-        cursor: pointer;
-        text-align: left;
-        transition: transform .18s, background .18s, box-shadow .18s;
-    }
-
-    .song-card:hover {
-        transform: translateY(-2px);
-        background: #fff;
-        box-shadow: 0 12px 30px rgba(0,0,0,.07);
-    }
-
-    .artwork {
-        width: 62px;
-        height: 62px;
-        flex: 0 0 62px;
-        border-radius: 14px;
-        object-fit: cover;
-        background:
-            linear-gradient(135deg,#ddd,#f8f8f8);
-    }
-
-    .song-info {
-        min-width: 0;
-        flex: 1;
-    }
-
-    .song-title {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 600;
-    }
-
-    .song-artist {
-        margin-top: 5px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        color: var(--secondary);
-        font-size: 14px;
-    }
-
-    .play-circle {
-        width: 42px;
-        height: 42px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: #f0f0f2;
-        font-size: 17px;
-    }
-
-    .empty-state {
-        padding: 45px 20px;
-        text-align: center;
-        color: var(--secondary);
-    }
-
-    .spinner {
-        width: 22px;
-        height: 22px;
-        margin: auto;
-        border: 2px solid #ddd;
-        border-top-color: #111;
-        border-radius: 50%;
-        animation: spin .7s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* ---------------- PLAYER ---------------- */
-
-    #player {
-        position: fixed;
-        z-index: 100;
-        left: 50%;
-        bottom: 18px;
-        width: min(850px, calc(100% - 24px));
-        transform: translateX(-50%);
-        padding: 13px;
-        display: flex;
-        align-items: center;
-        gap: 13px;
-        background: rgba(255,255,255,.88);
-        border: 1px solid rgba(255,255,255,.9);
-        border-radius: 22px;
-        box-shadow: 0 18px 60px rgba(0,0,0,.16);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-    }
-
-    #playerArtwork {
-        width: 54px;
-        height: 54px;
-        flex: 0 0 54px;
-        border-radius: 13px;
-        object-fit: cover;
-        background: #eee;
-    }
-
-    .player-info {
-        min-width: 0;
-        flex: 1;
-    }
-
-    #playerTitle {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 600;
-    }
-
-    #playerArtist {
-        margin-top: 4px;
-        color: var(--secondary);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 13px;
-    }
-
-    #audio {
-        width: 260px;
-        max-width: 30%;
-    }
-
-    .player-close {
-        width: 38px;
-        height: 38px;
-        border: 0;
-        border-radius: 50%;
-        background: #eeeef0;
-        cursor: pointer;
-        font-size: 18px;
-    }
-
-    @media (max-width: 650px) {
-        #app {
-            padding-top: 15px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Commodity Inflation Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a5f',
+            }
+          }
         }
-
-        header h1 {
-            letter-spacing: -2px;
-        }
-
-        #searchButton {
-            width: 44px;
-            padding: 0;
-            font-size: 0;
-        }
-
-        #searchButton::after {
-            content: "→";
-            font-size: 20px;
-        }
-
-        #player {
-            bottom: 10px;
-            border-radius: 20px;
-        }
-
-        #audio {
-            position: absolute;
-            left: 13px;
-            right: 13px;
-            bottom: -10px;
-            width: calc(100% - 26px);
-            max-width: none;
-            height: 24px;
-        }
+      }
     }
-</style>
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .card { @apply bg-white rounded-xl border border-slate-200 shadow-sm; }
+    .stat-value { @apply text-3xl font-bold tracking-tight; }
+    .positive { color: #16a34a; }
+    .negative { color: #dc2626; }
+    .neutral { color: #64748b; }
+  </style>
 </head>
-
-<body>
-
-<!-- PASSWORD -->
-
-<section id="lockScreen">
-    <div class="lock-card">
-        <div class="lock-icon">♪</div>
-
-        <h1>Welcome</h1>
-        <p>Enter the password to continue.</p>
-
-        <input
-            id="passwordInput"
-            class="password-input"
-            type="password"
-            autocomplete="off"
-            placeholder="Password"
-            aria-label="Password"
-        >
-
-        <button id="unlockButton" class="unlock-button">
-            Continue
-        </button>
-
-        <div id="lockError" class="lock-error"></div>
-    </div>
-</section>
-
-
-<!-- APPLICATION -->
-
-<main id="app" class="hidden">
-    <div class="container">
-
-        <header>
-            <div class="eyebrow">MUSIC</div>
-            <h1>Listen.</h1>
-            <p>Search for something you want to hear.</p>
-        </header>
-
-        <section class="search-wrapper">
-
-            <form id="searchForm" class="search-box">
-                <span class="search-icon">⌕</span>
-
-                <input
-                    id="searchInput"
-                    type="search"
-                    autocomplete="off"
-                    placeholder="Artists, songs, albums…"
-                    aria-label="Search music"
-                >
-
-                <button id="searchButton" type="submit">
-                    Search
-                </button>
-            </form>
-
-        </section>
-
-
-        <section class="suggestions-section">
-
-            <div class="section-title">
-                <h2>Suggestions</h2>
-                <span id="resultStatus"></span>
-            </div>
-
-            <div id="suggestions">
-                <div class="empty-state">
-                    Search for a song to get started.
-                </div>
-            </div>
-
-        </section>
-
-    </div>
-</main>
-
-
-<!-- PLAYER -->
-
-<div id="player" class="hidden">
-
-    <img id="playerArtwork" alt="">
-
-    <div class="player-info">
-        <div id="playerTitle">Nothing playing</div>
-        <div id="playerArtist"></div>
-    </div>
-
-    <audio id="audio" controls preload="none"></audio>
-
-    <button
-        id="closePlayer"
-        class="player-close"
-        aria-label="Close player"
-    >
-        ×
-    </button>
-
-</div>
-
-
-<script>
-"use strict";
-
-/*
-    IMPORTANT SECURITY NOTE
-
-    This password is only a UI gate because this is client-side HTML.
-    Anyone who can inspect the page can discover it.
-
-    For real protection, validate the password on your server.
-*/
-
-const PASSWORD = "///";
-
-/*
-    Your backend should expose something like:
-
-        GET /api/search?q=believer
-
-    and return:
-
-    {
-        "results": [
-            {
-                "id": "...",
-                "title": "...",
-                "artist": "...",
-                "artwork": "...",
-                "playUrl": "..."
-            }
-        ]
-    }
-
-    Keep the backend responsible for provider/API credentials.
-
-    Do NOT use this endpoint to disguise or falsify the origin of media.
-*/
-
-const API_SEARCH_ENDPOINT = "/api/search";
-
-
-const lockScreen = document.getElementById("lockScreen");
-const app = document.getElementById("app");
-
-const passwordInput = document.getElementById("passwordInput");
-const unlockButton = document.getElementById("unlockButton");
-const lockError = document.getElementById("lockError");
-
-const searchForm = document.getElementById("searchForm");
-const searchInput = document.getElementById("searchInput");
-const suggestions = document.getElementById("suggestions");
-const resultStatus = document.getElementById("resultStatus");
-
-const player = document.getElementById("player");
-const playerArtwork = document.getElementById("playerArtwork");
-const playerTitle = document.getElementById("playerTitle");
-const playerArtist = document.getElementById("playerArtist");
-const audio = document.getElementById("audio");
-const closePlayer = document.getElementById("closePlayer");
-
-
-/* ---------------- PASSWORD ---------------- */
-
-function unlock() {
-    if (passwordInput.value === PASSWORD) {
-        lockScreen.classList.add("hidden");
-        app.classList.remove("hidden");
-
-        sessionStorage.setItem("unlocked", "true");
-
-        setTimeout(() => searchInput.focus(), 150);
-    } else {
-        lockError.textContent = "Incorrect password.";
-
-        passwordInput.value = "";
-        passwordInput.focus();
-
-        setTimeout(() => {
-            lockError.textContent = "";
-        }, 2500);
-    }
-}
-
-unlockButton.addEventListener("click", unlock);
-
-passwordInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        unlock();
-    }
-});
-
-
-/* Optional session persistence */
-
-if (sessionStorage.getItem("unlocked") === "true") {
-    lockScreen.classList.add("hidden");
-    app.classList.remove("hidden");
-}
-
-
-/* ---------------- SEARCH ---------------- */
-
-searchForm.addEventListener("submit", async event => {
-    event.preventDefault();
-
-    const query = searchInput.value.trim();
-
-    if (!query) {
-        searchInput.focus();
-        return;
-    }
-
-    await search(query);
-});
-
-
-async function search(query) {
-
-    setLoading();
-
-    try {
-
-        const url =
-            `${API_SEARCH_ENDPOINT}?q=${encodeURIComponent(query)}`;
-
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(
-                `Search request failed (${response.status})`
-            );
-        }
-
-        const data = await response.json();
-
-        const results = Array.isArray(data.results)
-            ? data.results.slice(0, 3)
-            : [];
-
-        renderResults(results);
-
-    } catch (error) {
-
-        console.error(error);
-
-        resultStatus.textContent = "";
-
-        suggestions.innerHTML = `
-            <div class="empty-state">
-                <strong>Couldn't complete the search.</strong>
-                <br>
-                <span>
-                    Check that your search backend is running and try again.
-                </span>
-            </div>
-        `;
-    }
-}
-
-
-/* ---------------- RESULTS ---------------- */
-
-function setLoading() {
-
-    resultStatus.textContent = "Searching…";
-
-    suggestions.innerHTML = `
-        <div class="empty-state">
-            <div class="spinner"></div>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+            </svg>
+          </div>
+          <span class="font-semibold text-lg text-slate-900">InflationPulse</span>
         </div>
-    `;
-}
+        <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+          <a href="#" class="hover:text-brand-600 transition">Dashboard</a>
+          <a href="#" class="hover:text-brand-600 transition">Commodities</a>
+          <a href="#" class="hover:text-brand-600 transition">Methodology</a>
+          <a href="#" class="hover:text-brand-600 transition">API</a>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="text-sm font-medium text-slate-600 hover:text-brand-600">Sign in</button>
+          <button class="bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+            Get API Access
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
 
+  <!-- Hero / Search -->
+  <section class="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-3">
+          Commodity Inflation Tracker
+        </h1>
+        <p class="text-slate-600 text-lg">
+          Real-time inflation rates, historical trends, and interactive charts for any commodity.
+        </p>
+      </div>
 
-function renderResults(results) {
+      <!-- Search Box -->
+      <div class="max-w-2xl mx-auto">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+          <input
+            id="commodityInput"
+            type="text"
+            placeholder="Enter commodity (e.g. Wheat, Crude Oil, Copper, Coffee, Gold...)"
+            class="w-full pl-12 pr-32 py-4 text-base border border-slate-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white"
+            onkeydown="if(event.key==='Enter') searchCommodity()"
+          />
+          <button
+            onclick="searchCommodity()"
+            class="absolute right-2 top-2 bottom-2 bg-brand-600 hover:bg-brand-700 text-white font-medium px-5 rounded-lg transition"
+          >
+            Search
+          </button>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-4 justify-center">
+          <button onclick="quickSearch('Wheat')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Wheat</button>
+          <button onclick="quickSearch('Crude Oil')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Crude Oil</button>
+          <button onclick="quickSearch('Copper')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Copper</button>
+          <button onclick="quickSearch('Coffee')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Coffee</button>
+          <button onclick="quickSearch('Gold')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Gold</button>
+          <button onclick="quickSearch('Natural Gas')" class="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-full hover:border-brand-500 hover:text-brand-600 transition">Natural Gas</button>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    resultStatus.textContent =
-        results.length
-            ? `${results.length} result${results.length === 1 ? "" : "s"}`
-            : "";
+  <!-- Results Section (hidden by default) -->
+  <main id="resultsSection" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-    if (!results.length) {
+    <!-- Commodity Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <div class="flex items-center gap-3">
+          <h2 id="commodityName" class="text-2xl font-bold text-slate-900">Wheat</h2>
+          <span class="text-xs font-medium px-2.5 py-1 bg-brand-50 text-brand-700 rounded-full">Soft Red Winter</span>
+        </div>
+        <p class="text-slate-500 text-sm mt-1">Last updated: <span id="lastUpdated">Sep 26, 2026 • 14:30 UTC</span></p>
+      </div>
+      <div class="flex gap-2">
+        <button class="text-sm border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 transition">Download CSV</button>
+        <button class="text-sm border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 transition">Set Alert</button>
+      </div>
+    </div>
 
-        suggestions.innerHTML = `
-            <div class="empty-state">
-                No results found.
+    <!-- Key Metrics -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="card p-5">
+        <p class="text-sm text-slate-500 mb-1">Current YoY Inflation</p>
+        <p id="yoyValue" class="stat-value positive">+8.4%</p>
+        <p class="text-xs text-slate-400 mt-1">vs previous year</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-sm text-slate-500 mb-1">Month-over-Month</p>
+        <p id="momValue" class="stat-value negative">-1.2%</p>
+        <p class="text-xs text-slate-400 mt-1">latest monthly change</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-sm text-slate-500 mb-1">Spot Price</p>
+        <p id="spotPrice" class="stat-value text-slate-900">$6.42</p>
+        <p class="text-xs text-slate-400 mt-1">per bushel</p>
+      </div>
+      <div class="card p-5">
+        <p class="text-sm text-slate-500 mb-1">5-Year Avg Inflation</p>
+        <p id="avg5y" class="stat-value neutral">+4.1%</p>
+        <p class="text-xs text-slate-400 mt-1">annualized</p>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <!-- Main Chart -->
+      <div class="card p-6 lg:col-span-2">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-semibold text-slate-900">Price & Inflation Trend</h3>
+          <div class="flex gap-1 bg-slate-100 p-1 rounded-lg">
+            <button onclick="setChartRange('1Y')" class="chart-range-btn active text-xs px-3 py-1.5 rounded-md font-medium">1Y</button>
+            <button onclick="setChartRange('3Y')" class="chart-range-btn text-xs px-3 py-1.5 rounded-md font-medium text-slate-600">3Y</button>
+            <button onclick="setChartRange('5Y')" class="chart-range-btn text-xs px-3 py-1.5 rounded-md font-medium text-slate-600">5Y</button>
+            <button onclick="setChartRange('MAX')" class="chart-range-btn text-xs px-3 py-1.5 rounded-md font-medium text-slate-600">MAX</button>
+          </div>
+        </div>
+        <div class="h-72">
+          <canvas id="mainChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Side Stats / Breakdown -->
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-900 mb-5">Contribution Breakdown</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-600">Base Commodity Price</span>
+              <span class="font-medium">+6.8%</span>
             </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="bg-brand-500 h-2 rounded-full" style="width: 68%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-600">Transportation & Logistics</span>
+              <span class="font-medium">+1.1%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="bg-amber-500 h-2 rounded-full" style="width: 11%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-600">Currency Effects</span>
+              <span class="font-medium">+0.5%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 5%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span class="text-slate-600">Other / Residual</span>
+              <span class="font-medium">0.0%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2">
+              <div class="bg-slate-400 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-100">
+          <h4 class="text-sm font-medium text-slate-700 mb-3">Data Sources</h4>
+          <ul class="text-xs text-slate-500 space-y-1.5">
+            <li>• USDA / World Bank Commodity Price Data</li>
+            <li>• BLS Producer Price Index</li>
+            <li>• FAO Food Price Index</li>
+            <li>• CME Futures Settlements</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-900 mb-5">YoY Inflation Rate</h3>
+        <div class="h-56">
+          <canvas id="yoyChart"></canvas>
+        </div>
+      </div>
+      <div class="card p-6">
+        <h3 class="font-semibold text-slate-900 mb-5">Regional Comparison</h3>
+        <div class="h-56">
+          <canvas id="regionalChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historical Table -->
+    <div class="card overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="font-semibold text-slate-900">Historical Monthly Data</h3>
+        <span class="text-xs text-slate-500">Last 12 months</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="text-left font-medium px-6 py-3">Month</th>
+              <th class="text-right font-medium px-6 py-3">Spot Price</th>
+              <th class="text-right font-medium px-6 py-3">MoM %</th>
+              <th class="text-right font-medium px-6 py-3">YoY %</th>
+              <th class="text-right font-medium px-6 py-3">Volume</th>
+            </tr>
+          </thead>
+          <tbody id="historyTable" class="divide-y divide-slate-100">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Insights / Notes -->
+    <div class="card p-6">
+      <h3 class="font-semibold text-slate-900 mb-3">Key Insights</h3>
+      <ul class="text-sm text-slate-600 space-y-2 list-disc list-inside">
+        <li>YoY inflation remains elevated compared to the 5-year average, driven primarily by supply constraints in major producing regions.</li>
+        <li>Month-over-month decline suggests short-term relief, though futures curves still price in elevated risk premiums.</li>
+        <li>Currency depreciation in key exporting countries has amplified local price increases relative to USD-denominated benchmarks.</li>
+      </ul>
+      <p class="text-xs text-slate-400 mt-4">
+        Methodology note: Inflation rates are calculated using monthly average spot prices. Seasonal adjustments applied where available. Data subject to revision.
+      </p>
+    </div>
+  </main>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+    <div class="max-w-md mx-auto">
+      <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-5">
+        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-900 mb-2">Search for a commodity</h3>
+      <p class="text-slate-500 text-sm">
+        Enter any major commodity above to view real-time inflation rates, historical trends, and detailed breakdowns.
+      </p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-7 h-7 bg-brand-600 rounded-md flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+            </div>
+            <span class="font-semibold text-slate-900">InflationPulse</span>
+          </div>
+          <p class="text-sm text-slate-500">Transparent commodity inflation data for professionals and researchers.</p>
+        </div>
+        <div>
+          <h4 class="font-medium text-slate-900 mb-3 text-sm">Product</h4>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="#" class="hover:text-brand-600">Dashboard</a></li>
+            <li><a href="#" class="hover:text-brand-600">API Access</a></li>
+            <li><a href="#" class="hover:text-brand-600">Data Coverage</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-medium text-slate-900 mb-3 text-sm">Resources</h4>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="#" class="hover:text-brand-600">Methodology</a></li>
+            <li><a href="#" class="hover:text-brand-600">Data Sources</a></li>
+            <li><a href="#" class="hover:text-brand-600">Documentation</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-medium text-slate-900 mb-3 text-sm">Company</h4>
+          <ul class="space-y-2 text-sm text-slate-500">
+            <li><a href="#" class="hover:text-brand-600">About</a></li>
+            <li><a href="#" class="hover:text-brand-600">Contact</a></li>
+            <li><a href="#" class="hover:text-brand-600">Privacy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-100 mt-10 pt-6 text-center text-xs text-slate-400">
+        © 2026 InflationPulse. Data for informational purposes only. Not financial advice.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ========== Mock Data ==========
+    const mockData = {
+      'Wheat': {
+        name: 'Wheat',
+        grade: 'Soft Red Winter',
+        yoy: 8.4,
+        mom: -1.2,
+        spot: 6.42,
+        unit: 'per bushel',
+        avg5y: 4.1,
+        prices: [5.8, 5.9, 6.1, 6.3, 6.5, 6.8, 7.0, 6.9, 6.7, 6.5, 6.4, 6.42],
+        yoySeries: [3.2, 4.1, 5.8, 7.2, 9.1, 10.4, 11.2, 10.8, 9.5, 8.9, 8.6, 8.4],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      },
+      'Crude Oil': {
+        name: 'Crude Oil',
+        grade: 'WTI',
+        yoy: 12.7,
+        mom: 2.1,
+        spot: 78.45,
+        unit: 'per barrel',
+        avg5y: 6.8,
+        prices: [68, 70, 72, 74, 71, 69, 73, 76, 79, 77, 76, 78.45],
+        yoySeries: [5.1, 6.4, 8.2, 9.8, 7.5, 6.1, 8.9, 11.2, 13.4, 12.1, 11.8, 12.7],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      },
+      'Copper': {
+        name: 'Copper',
+        grade: 'Grade A',
+        yoy: 5.3,
+        mom: 0.4,
+        spot: 4.18,
+        unit: 'per lb',
+        avg5y: 3.9,
+        prices: [3.9, 3.95, 4.0, 4.05, 4.1, 4.12, 4.15, 4.2, 4.18, 4.16, 4.17, 4.18],
+        yoySeries: [2.1, 2.8, 3.5, 4.0, 4.6, 5.1, 5.4, 5.8, 5.5, 5.2, 5.1, 5.3],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      },
+      'Coffee': {
+        name: 'Coffee',
+        grade: 'Arabica',
+        yoy: 15.2,
+        mom: -0.8,
+        spot: 2.34,
+        unit: 'per lb',
+        avg5y: 7.4,
+        prices: [1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.45, 2.5, 2.42, 2.38, 2.36, 2.34],
+        yoySeries: [8.2, 9.5, 11.1, 12.8, 14.2, 15.8, 16.5, 16.1, 15.7, 15.4, 15.3, 15.2],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      },
+      'Gold': {
+        name: 'Gold',
+        grade: 'LBMA',
+        yoy: 18.6,
+        mom: 1.5,
+        spot: 2680,
+        unit: 'per oz',
+        avg5y: 9.2,
+        prices: [2350, 2400, 2450, 2500, 2520, 2550, 2580, 2620, 2650, 2660, 2670, 2680],
+        yoySeries: [12.1, 13.4, 14.8, 15.9, 16.5, 17.2, 17.8, 18.1, 18.4, 18.3, 18.5, 18.6],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      },
+      'Natural Gas': {
+        name: 'Natural Gas',
+        grade: 'Henry Hub',
+        yoy: -6.4,
+        mom: 3.2,
+        spot: 2.85,
+        unit: 'per MMBtu',
+        avg5y: 2.1,
+        prices: [3.2, 3.1, 2.9, 2.7, 2.6, 2.5, 2.55, 2.6, 2.7, 2.75, 2.8, 2.85],
+        yoySeries: [-12.1, -11.4, -10.2, -8.5, -7.1, -6.8, -7.2, -6.9, -6.5, -6.3, -6.5, -6.4],
+        months: ['Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26','Jul 26','Aug 26','Sep 26']
+      }
+    };
+
+    let mainChart, yoyChart, regionalChart;
+
+    function formatPercent(val) {
+      const sign = val > 0 ? '+' : '';
+      return sign + val.toFixed(1) + '%';
+    }
+
+    function getColorClass(val) {
+      if (val > 0) return 'positive';
+      if (val < 0) return 'negative';
+      return 'neutral';
+    }
+
+    function searchCommodity() {
+      const input = document.getElementById('commodityInput').value.trim();
+      if (!input) return;
+
+      // Simple fuzzy match
+      let key = Object.keys(mockData).find(k => k.toLowerCase() === input.toLowerCase());
+      if (!key) {
+        key = Object.keys(mockData).find(k => k.toLowerCase().includes(input.toLowerCase()));
+      }
+      if (!key) {
+        alert('Commodity not found in demo data. Try: Wheat, Crude Oil, Copper, Coffee, Gold, Natural Gas');
+        return;
+      }
+
+      renderCommodity(key);
+    }
+
+    function quickSearch(name) {
+      document.getElementById('commodityInput').value = name;
+      renderCommodity(name);
+    }
+
+    function renderCommodity(key) {
+      const data = mockData[key];
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('resultsSection').classList.remove('hidden');
+
+      // Header
+      document.getElementById('commodityName').textContent = data.name;
+      document.querySelector('#resultsSection .bg-brand-50').textContent = data.grade;
+
+      // Metrics
+      const yoyEl = document.getElementById('yoyValue');
+      yoyEl.textContent = formatPercent(data.yoy);
+      yoyEl.className = 'stat-value ' + getColorClass(data.yoy);
+
+      const momEl = document.getElementById('momValue');
+      momEl.textContent = formatPercent(data.mom);
+      momEl.className = 'stat-value ' + getColorClass(data.mom);
+
+      document.getElementById('spotPrice').textContent = '$' + data.spot.toLocaleString();
+      document.getElementById('spotPrice').nextElementSibling.textContent = data.unit;
+
+      const avgEl = document.getElementById('avg5y');
+      avgEl.textContent = formatPercent(data.avg5y);
+      avgEl.className = 'stat-value ' + getColorClass(data.avg5y);
+
+      // Charts
+      renderMainChart(data);
+      renderYoyChart(data);
+      renderRegionalChart();
+      renderTable(data);
+
+      // Scroll to results
+      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderMainChart(data) {
+      const ctx = document.getElementById('mainChart').getContext('2d');
+      if (mainChart) mainChart.destroy();
+
+      mainChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.months,
+          datasets: [
+            {
+              label: 'Spot Price',
+              data: data.prices,
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.08)',
+              fill: true,
+              tension: 0.3,
+              yAxisID: 'y',
+              pointRadius: 3,
+              pointHoverRadius: 5
+            },
+            {
+              label: 'YoY Inflation %',
+              data: data.yoySeries,
+              borderColor: '#f59e0b',
+              backgroundColor: 'transparent',
+              borderDash: [5, 5],
+              tension: 0.3,
+              yAxisID: 'y1',
+              pointRadius: 3,
+              pointHoverRadius: 5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: { display: true, text: 'Price ($)' },
+              grid: { color: '#f1f5f9' }
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: { display: true, text: 'YoY %' },
+              grid: { drawOnChartArea: false }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderYoyChart(data) {
+      const ctx = document.getElementById('yoyChart').getContext('2d');
+      if (yoyChart) yoyChart.destroy();
+
+      yoyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.months,
+          datasets: [{
+            label: 'YoY %',
+            data: data.yoySeries,
+            backgroundColor: data.yoySeries.map(v => v >= 0 ? 'rgba(37, 99, 235, 0.7)' : 'rgba(220, 38, 38, 0.7)'),
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v + '%' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderRegionalChart() {
+      const ctx = document.getElementById('regionalChart').getContext('2d');
+      if (regionalChart) regionalChart.destroy();
+
+      regionalChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['North America', 'Europe', 'Asia', 'Latin America', 'Other'],
+          datasets: [{
+            data: [32, 24, 28, 11, 5],
+            backgroundColor: ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('historyTable');
+      tbody.innerHTML = '';
+
+      // Generate simple MoM from prices
+      for (let i = data.months.length - 1; i >= 0; i--) {
+        const mom = i === 0 ? 0 : ((data.prices[i] - data.prices[i-1]) / data.prices[i-1] * 100);
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-slate-50';
+        row.innerHTML = `
+          <td class="px-6 py-3 font-medium text-slate-900">${data.months[i]}</td>
+          <td class="px-6 py-3 text-right">$${data.prices[i].toLocaleString()}</td>
+          <td class="px-6 py-3 text-right ${getColorClass(mom)}">${i === 0 ? '—' : formatPercent(mom)}</td>
+          <td class="px-6 py-3 text-right ${getColorClass(data.yoySeries[i])}">${formatPercent(data.yoySeries[i])}</td>
+          <td class="px-6 py-3 text-right text-slate-500">${(Math.random() * 50 + 20).toFixed(1)}k</td>
         `;
-
-        return;
+        tbody.appendChild(row);
+      }
     }
 
-    suggestions.innerHTML = "";
-
-    results.forEach(song => {
-
-        const card = document.createElement("button");
-
-        card.type = "button";
-        card.className = "song-card";
-
-        const artwork = document.createElement("img");
-
-        artwork.className = "artwork";
-        artwork.alt = "";
-        artwork.loading = "lazy";
-
-        /*
-            Safe fallback instead of broken-image icons.
-        */
-        artwork.src =
-            song.artwork ||
-            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23eeeeef'/%3E%3Ctext x='50' y='55' text-anchor='middle' font-size='35' fill='%23999999'%3E♪%3C/text%3E%3C/svg%3E";
-
-        const info = document.createElement("div");
-        info.className = "song-info";
-
-        const title = document.createElement("div");
-        title.className = "song-title";
-        title.textContent = song.title || "Unknown title";
-
-        const artist = document.createElement("div");
-        artist.className = "song-artist";
-        artist.textContent = song.artist || "Unknown artist";
-
-        const play = document.createElement("div");
-        play.className = "play-circle";
-        play.textContent = "▶";
-
-        info.appendChild(title);
-        info.appendChild(artist);
-
-        card.appendChild(artwork);
-        card.appendChild(info);
-        card.appendChild(play);
-
-        card.addEventListener("click", () => {
-            playSong(song);
-        });
-
-        suggestions.appendChild(card);
-    });
-}
-
-
-/* ---------------- PLAYER ---------------- */
-
-function playSong(song) {
-
-    /*
-        playUrl should be a legitimate media URL or provider-approved
-        playback mechanism supplied by your backend/provider.
-    */
-
-    if (!song.playUrl) {
-
-        alert(
-            "This result does not have an available playback source."
-        );
-
-        return;
+    function setChartRange(range) {
+      document.querySelectorAll('.chart-range-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-900');
+        btn.classList.add('text-slate-600');
+      });
+      event.target.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-900');
+      event.target.classList.remove('text-slate-600');
+      // In a real app you would re-fetch / re-slice data here
     }
 
-    playerTitle.textContent =
-        song.title || "Unknown title";
-
-    playerArtist.textContent =
-        song.artist || "Unknown artist";
-
-    playerArtwork.src =
-        song.artwork || "";
-
-    player.classList.remove("hidden");
-
-    audio.pause();
-
-    audio.src = song.playUrl;
-
-    audio.load();
-
-    audio.play().catch(error => {
-
-        /*
-            Browsers can block autoplay. Since the user clicked the
-            result, most browsers permit playback, but this keeps the
-            application from crashing if they don't.
-        */
-
-        console.info(
-            "Playback requires user interaction:",
-            error
-        );
-    });
-}
-
-
-closePlayer.addEventListener("click", () => {
-
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
-
-    player.classList.add("hidden");
-});
-
-
-/* ---------------- AUDIO ERROR HANDLING ---------------- */
-
-audio.addEventListener("error", () => {
-
-    console.error(
-        "The selected media could not be played."
-    );
-
-    playerTitle.textContent =
-        "Playback unavailable";
-
-    playerArtist.textContent =
-        "The provider did not return playable media.";
-});
-
-
-/* ---------------- KEYBOARD UX ---------------- */
-
-document.addEventListener("keydown", event => {
-
-    if (
-        event.key === "/" &&
-        document.activeElement !== searchInput &&
-        document.activeElement !== passwordInput
-    ) {
-        event.preventDefault();
-        searchInput.focus();
-    }
-
-    if (
-        event.key === "Escape" &&
-        document.activeElement === searchInput
-    ) {
-        searchInput.value = "";
-        searchInput.blur();
-    }
-});
-</script>
-
+    // Optional: load a default on page load for demo
+    // window.addEventListener('DOMContentLoaded', () => quickSearch('Wheat'));
+  </script>
 </body>
 </html>
